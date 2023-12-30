@@ -1,0 +1,70 @@
+name: release
+on:
+  push:
+    tags:
+    - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get the release version from the tag
+        run: |
+          cargo metadata --no-deps --format-version 1 \
+            | jq -r '"VERSION=" + .packages[0].version' \
+            >> $GITHUB_ENV
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create $GITHUB_REF_NAME
+    outputs:
+      version: ${{ env.VERSION }}
+
+  build-release:
+    name: build-release
+    needs: ['create-release']
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: install dependencies and build (amd64)
+      if: matrix.arch == 'amd64'
+      run: |
+        sudo apt-get update && sudo apt-get install -y libdbus-1-dev
+        cargo build --verbose --release
+        strip target/release/ruuvi-logger
+        echo "BIN_PATH=target/release/ruuvi-logger" >> $GITHUB_ENV
+
+    - name: install dependencies and build (arm64)
+      if: matrix.arch == 'arm64'
+      run: |
+        # build the image for cross-compiling
+        ./arm64-cross/build.sh
+        docker run -u $(id -u):$(id -g) -v ${PWD}:/home/builder/rust-pkg --rm cross-compiler
+        docker run -u $(id -u):$(id -g) -v ${PWD}:/home/builder/rust-pkg --rm \
+          cross-compiler aarch64-linux-gnu-strip \
+          /home/builder/rust-pkg/target/aarch64-unknown-linux-gnu/release/ruuvi-logger
+        echo "BIN_PATH=target/aarch64-unknown-linux-gnu/release/ruuvi-logger" >> $GITHUB_ENV
+
+    - name: Build archive
+      run: |
+        sudo apt-get update && sudo apt-get install -y fakeroot lintian
+        echo building with ${{ env.BIN_PATH }} ${{ needs.create-release.outputs.version }} ${{ matrix.arch }}
+        ./deb/build.sh ${{ env.BIN_PATH }} ${{ needs.create-release.outputs.version }} ${{ matrix.arch }}
+        echo "ASSET=ruuvi-logger_${{ needs.create-release.outputs.version }}_${{ matrix.arch }}.deb" >> $GITHUB_ENV
+
+    - name: Upload release archive
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: gh release upload $GITHUB_REF_NAME ${{ env.ASSET }}

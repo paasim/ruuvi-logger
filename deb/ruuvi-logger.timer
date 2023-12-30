@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ruuvi-logger daily
+
+[Timer]
+OnCalendar=*-*-* 10:40:00
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
