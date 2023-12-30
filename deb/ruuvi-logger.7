@@ -1,0 +1,22 @@
+.TH RUUVI-LOGGER 7
+.SH NAME
+ruuvi-logger \- save logged history from ruuvitags.
+.SH SYNOPSIS
+.B ruuvi-logger
+.B \-\-db
+.I /path/to/the/database.db
+mac1 mac2...
+.SH DESCRIPTION
+.B ruuvi-logger
+saves the history from ruuvitags identified to a sqlite database.
+.P
+By default, the systemd unit defined in
+.I /lib/systemd/system/ruuvi-logger.service
+reads the
+.B db
+(defaults to
+.IR /tmp/records.db )
+and
+.B mac addresses
+(defaults to empty list) from
+.IR /etc/ruuvi-logger/ruuvi-logger.conf .

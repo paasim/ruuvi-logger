@@ -1,0 +1,12 @@
+Package: ruuvi-logger
+Version: x.y.z
+Section: utils
+Priority: optional
+Maintainer: Markus Paasiniemi <paasim@iki.fi>
+Homepage: https://github.com/paasim/ruuvi-logger
+Architecture: amd64
+Depends: bluez (>= 5.60), libc6, libdbus-1-dev
+Description: save ruuvitag observations
+ Package for querying logged history from ruuvitag(s). Saves the data to a
+ sqlite database and only downloads records that are more recent than the
+ newest record in the database.

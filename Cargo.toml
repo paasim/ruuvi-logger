@@ -1,0 +1,17 @@
+[package]
+name = "ruuvi-logger"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4"
+macaddr = { version = "1.0" }
+ruuvi = { version = "0.5", git = "https://github.com/paasim/ruuvi.git", tag = "v0.5.0" }
+sqlx = { version = "0.7", features = ["chrono", "macros", "migrate", "runtime-tokio", "sqlite"] }
+tokio = { version = "1.14", features = ["macros", "rt"] }
+
+# apparently faster compilation for sqlx-macros
+[profile.dev.package.sqlx-macros]
+opt-level = 3

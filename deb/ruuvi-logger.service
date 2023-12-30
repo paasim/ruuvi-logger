@@ -1,0 +1,7 @@
+[Unit]
+Description=Ruuvi logger
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/ruuvi-logger/ruuvi-logger.conf
+ExecStart=/usr/bin/ruuvi-logger --db "${DB_PATH}" $MACS
