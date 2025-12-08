@@ -8,16 +8,23 @@ use sqlx::{SqliteConnection, query};
 pub async fn get_new_records(config: Config) -> Res<()> {
     let mut con = get_connection(&config.db_path).await?;
     for m in config.mac_addresses {
-        if let Err(e) = get_new_records_for_mac(&mut con, m).await {
+        if let Err(e) = get_new_records_for_mac(&mut con, m, config.min_duration).await {
             eprintln!("{}", e);
         }
     }
     Ok(())
 }
 
-async fn get_new_records_for_mac(con: &mut SqliteConnection, mac: MacAddr6) -> Res<()> {
+async fn get_new_records_for_mac(
+    con: &mut SqliteConnection,
+    mac: MacAddr6,
+    min_duration: Duration,
+) -> Res<()> {
     println!("obtaining records for {}", mac);
-    let start = match log_end(con, &mac).await.map(valid_start)? {
+    let start = match log_end(con, &mac)
+        .await
+        .map(|o| valid_start(o, min_duration))?
+    {
         Some(s) => s,
         None => return Ok(()),
     };
@@ -27,10 +34,10 @@ async fn get_new_records_for_mac(con: &mut SqliteConnection, mac: MacAddr6) -> R
     Ok(())
 }
 
-fn valid_start(opt_start: Option<DateTime<Utc>>) -> Option<DateTime<Utc>> {
+fn valid_start(opt_start: Option<DateTime<Utc>>, min_duration: Duration) -> Option<DateTime<Utc>> {
     let now = Utc::now();
     match opt_start {
-        Some(s) if s > now - Duration::minutes(5) => {
+        Some(s) if now - s < min_duration => {
             println!(" skipping because latest record was at {}", s);
             None
         }

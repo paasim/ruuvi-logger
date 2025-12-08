@@ -1,4 +1,5 @@
 use crate::err::{Error, Res};
+use chrono::Duration;
 use macaddr::MacAddr6;
 use std::env;
 
@@ -6,6 +7,7 @@ use std::env;
 pub struct Config {
     pub db_path: String,
     pub mac_addresses: Vec<MacAddr6>,
+    pub min_duration: Duration,
 }
 
 impl Config {
@@ -16,9 +18,14 @@ impl Config {
             _ => Err(get_usage(&progname).into()),
         }?;
         let mac_addresses = args.map(|s| Ok(s.parse()?)).collect::<Res<_>>()?;
+        let min_duration = match env::var("MIN_MINUTES") {
+            Ok(s) => Duration::hours(s.parse().map_err(Error::from)?),
+            _ => Duration::minutes(5),
+        };
         Ok(Self {
             db_path,
             mac_addresses,
+            min_duration,
         })
     }
 }

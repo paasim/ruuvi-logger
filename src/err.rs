@@ -1,4 +1,4 @@
-use std::{error, fmt};
+use std::{error, fmt, num};
 
 #[derive(Debug)]
 pub enum Error {
@@ -30,6 +30,12 @@ impl From<macaddr::ParseError> for Error {
 impl From<String> for Error {
     fn from(value: String) -> Self {
         Self::Other(value)
+    }
+}
+
+impl From<num::ParseIntError> for Error {
+    fn from(value: num::ParseIntError) -> Self {
+        Self::Other(value.to_string())
     }
 }
 
