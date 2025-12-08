@@ -1,8 +1,8 @@
 use crate::{config::Config, db::get_connection, err::Res};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use macaddr::MacAddr6;
-use ruuvi::{get_log, Record};
-use sqlx::{query, SqliteConnection};
+use ruuvi::{Record, get_log};
+use sqlx::{SqliteConnection, query};
 
 #[tokio::main(flavor = "current_thread")]
 pub async fn get_new_records(config: Config) -> Res<()> {
@@ -68,7 +68,7 @@ async fn insert_rec(con: &mut SqliteConnection, mac: &MacAddr6, r: Record) -> Re
 async fn log_end(con: &mut SqliteConnection, mac: &MacAddr6) -> Res<Option<DateTime<Utc>>> {
     let mac = mac.as_bytes();
     let max_row = query!(
-        r#"SELECT MAX(datetime) AS max_datetime FROM record WHERE mac = ?"#,
+        r#"SELECT MAX(datetime) AS "max_datetime: NaiveDateTime" FROM record WHERE mac = ?"#,
         mac
     )
     .fetch_optional(con)

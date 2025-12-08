@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT MAX(datetime) AS \"max_datetime: NaiveDateTime\" FROM record WHERE mac = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "max_datetime: NaiveDateTime",
+        "ordinal": 0,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "dd15bba7b29160bbdb951ac1a0d3e704b10ac854e236c05f3cd51fc8e69e7636"
+}

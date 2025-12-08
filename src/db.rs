@@ -1,6 +1,6 @@
 use crate::err::Res;
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::{migrate, ConnectOptions, SqliteConnection};
+use sqlx::{ConnectOptions, SqliteConnection, migrate};
 
 pub async fn get_connection(db_path: &str) -> Res<SqliteConnection> {
     let opt = SqliteConnectOptions::new()
