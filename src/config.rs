@@ -19,7 +19,7 @@ impl Config {
         }?;
         let mac_addresses = args.map(|s| Ok(s.parse()?)).collect::<Res<_>>()?;
         let min_duration = match env::var("MIN_MINUTES") {
-            Ok(s) => Duration::hours(s.parse().map_err(Error::from)?),
+            Ok(s) => Duration::minutes(s.parse().map_err(Error::from)?),
             _ => Duration::minutes(5),
         };
         Ok(Self {
